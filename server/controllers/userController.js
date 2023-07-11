@@ -5,14 +5,15 @@ const { User } = require("../models/models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const auth_codes = {};
+
 const generatejwt = (id, email) => {
     console.log(email, id);
     return jwt.sign({ id, email }, process.env.SECRET_KEY, {
-        expiresIn: "15m",
+        expiresIn: "30m",
     });
 };
 
-function createCode(email) {
+const createCode = (email)=>{
     const letters = "abcdefghijklmnopqrstuvwxyz0123456789";
     let word = "";
 
@@ -130,6 +131,18 @@ class UserController {
         user = newUser[1][0];
         const token = generatejwt(user.id, user.email);
         return res.json({ token, user });
+    }
+    async delete(req, res, next) {
+        const id = req.params.id;
+        const isDelete = await User.destroy({ where: { id: id } });
+        if (isDelete) {
+            return res.status(200).json({
+                message: `Пользователь ${id} удален`,
+            });
+        }
+        return res.status(400).json({
+            errorMessage: `Непредвиденная ошибка`,
+        });
     }
 }
 module.exports = new UserController();
