@@ -1,4 +1,5 @@
 const db = require("../db");
+const jwt_decode = require("jwt-decode");
 const ApiError = require("../error/ApiError");
 const { User } = require("../models/models");
 const bcrypt = require("bcrypt");
@@ -94,35 +95,40 @@ class UserController {
     }
 
     async update(req, res, next) {
-        const { email, password, oldpassword, name, surname } = req.body;
-        console.log(email, password, oldpassword, name, surname);
+        let { email, newemail, newpassword, name, surname } = req.body;
+        console.log(email, newemail, newpassword, name, surname);
+
+        var decoded = jwt_decode(req.headers.authorization.split(" ")[1]);
+        console.log(decoded.email);
+
         let user = await User.findOne({ where: { email } });
+
+        if (!user) {
+            return next(ApiError.bedRequest("Пользователь не найден"));
+        }
+        if (user.id != decoded.id) {
+            return next(ApiError.bedRequest("Не верный пользователь"));
+        }
         if (req.files.avatar) {
-            if (!user) {
-                return next(ApiError.bedRequest("Пользователь не найден"));
-            }
             req.files.avatar.mv("public/userAvatars/" + user.id + ".jpg");
         }
-        if (oldpassword) {
-            let comparePassword = bcrypt.compareSync(
-                oldpassword,
-                user.password
-            );
-            if (!comparePassword) {
-                res.json({ errorMessage: "Указан неверный старый пароль" });
-                return next(
-                    ApiError.bedRequest("Указан неверный старый пароль")
-                );
-            }
+
+        if (newpassword) {
+            newpassword = await bcrypt.hash(newpassword, 5);
+        } else {
+            newpassword = user.password;
         }
 
-        const hashPassword = await bcrypt.hash(password, 5);
+        if (newemail) {
+            email = newemail;
+        }
+
         const newUser = await User.update(
-            { email, password: hashPassword, name, surname },
+            { email, password: newpassword, name, surname },
             { returning: true, where: { id: user.id } }
         );
         user = newUser[1][0];
-        const token = generatejwt(newUser[1][0].id, newUser[1][0].email);
+        const token = generatejwt(user.id, user.email);
         return res.json({ token, user });
     }
 }
