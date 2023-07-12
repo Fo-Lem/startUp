@@ -1,30 +1,84 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <div class="row">
+    <nav v-if="!isAuth">
+      <router-link class="router-link" to="/signIn">Вход</router-link>
+      <router-link class="router-link" to="/login">Регистрация</router-link>
+    </nav>
+    <router-view />
+  </div>
 </template>
+<script>
+import { check } from './http/userApi'
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+export default {
+  data() {
+    return {
+      isAuth: false,
+    }
+  },
+
+  beforeMount() {
+  check().then(data => {
+    console.log(data)
+
+  }).catch(error => {
+    console.error(error);
+
+  })
+  if (this.isAuth == true) {
+    this.$router.push({ path: 'profile' })
+  }
+}
 }
 
-nav {
-  padding: 30px;
-}
 
-nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
 
-nav a.router-link-exact-active {
-  color: #42b983;
+
+</script>
+
+<style scoped lang="scss">
+* {
+  color: #686868;
+  font-family: Roboto;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+  .row {
+    margin: 0 auto;
+    padding: 50px;
+    width: 1040px;
+    height: 824px;
+    flex-shrink: 0;
+    border-radius: 30px;
+    background: #FFF;
+    box-shadow: 0px 10px 25px 0px rgba(92, 99, 105, 0.20);
+
+    nav {
+      font-size: 30px;
+      display: flex;
+      gap: 50px;
+      margin-bottom: 50px;
+
+      .router-link {
+        color: #2c3e50;
+        text-decoration: none;
+        color: #686868;
+
+        &:hover {
+          color: #4786FF;
+        }
+
+        &-active {
+          color: #4786FF;
+          text-decoration: underline;
+        }
+      }
+
+
+
+
+    }
+  }
 }
 </style>
