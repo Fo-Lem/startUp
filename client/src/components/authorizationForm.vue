@@ -1,5 +1,5 @@
 <template lang="">
-    <form action="">
+    <form id="formAuthorization" @submit.prevent="" action="">
         <input-form
         :inputName="'email'"
         :inputType="'email'"

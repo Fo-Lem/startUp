@@ -4,7 +4,7 @@
             inputPlaceholder
         }}</label>
         <input
-            class="input-form"
+        :class="['input-form',error ? 'input-form-error' : '', ]"
             :autocomplete="autocomplete"
             :type="inputType"
             :placeholder="inputPlaceholder"
@@ -42,6 +42,9 @@ export default {
             type: String,
             // require: true,
         },
+        error:{
+            type:Boolean,
+        }
     },
     methods:{
         updateInput(event){
@@ -80,8 +83,12 @@ div {
         border-radius: 10px;
         border: 2px solid #686868;
         padding: 25px 30px;
-        &:focus-visible{
+
+        &-error{
             outline: #CB5E5E auto 1px;
+            &::placeholder{
+                color: #CB5E5E;
+            }
         }
     }
 }

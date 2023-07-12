@@ -8,6 +8,9 @@ export const registration = async (name, email, password) => {
         password,
     });
     console.log(data);
+    if(data.message){
+        return data
+    }
     localStorage.setItem("token", data.token);
     return jwt_decode(data.token);
 };

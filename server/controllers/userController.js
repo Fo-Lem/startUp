@@ -6,14 +6,14 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const auth_codes = {};
 
-const generatejwt = (id, email) => {
-    console.log(email, id);
-    return jwt.sign({ id, email }, process.env.SECRET_KEY, {
+const generatejwt = (id,name, email) => {
+    console.log(email,name, id);
+    return jwt.sign({ id,name, email }, process.env.SECRET_KEY, {
         expiresIn: "30m",
     });
 };
 
-const createCode = (email)=>{
+const createCode = (email) => {
     const letters = "abcdefghijklmnopqrstuvwxyz0123456789";
     let word = "";
 
@@ -21,6 +21,7 @@ const createCode = (email)=>{
         word += letters.charAt(Math.floor(Math.random() * letters.length));
     }
     auth_codes[email] = word;
+    
     setTimeout(() => {
         let e = email;
         delete auth_codes[e];
@@ -28,11 +29,11 @@ const createCode = (email)=>{
     }, 180000);
     console.log(auth_codes);
     return word;
-}
+};
 
 class UserController {
     async registration(req, res, next) {
-        const { email, password, auth_code } = req.body;
+        const { name,email, password, auth_code } = req.body;
         if (!email || !password) {
             res.status(400).json({
                 errorMessage: "Некоректный Email или password",
@@ -63,8 +64,8 @@ class UserController {
             return;
         }
         const hashPassword = await bcrypt.hash(password, 5);
-        const newUser = await User.create({ email, password: hashPassword });
-        const token = generatejwt(newUser.id, newUser.email);
+        const newUser = await User.create({ name,email, password: hashPassword });
+        const token = generatejwt(newUser.id, newUser.name,newUser.email);
         res.json({ token });
     }
     async authorization(req, res, next) {
@@ -86,12 +87,12 @@ class UserController {
             res.json({ errorMessage: "Указан неверный пароль" });
             return next(ApiError.bedRequest("Указан неверный пароль"));
         }
-        const token = generatejwt(user.id, user.email);
+        const token = generatejwt(user.id,user.name, user.email);
         res.json({ token });
     }
 
     async check(req, res, next) {
-        const token = generatejwt(req.user.id, req.user.email);
+        const token = generatejwt(req.user.id,req.user.name, req.user.email);
         return res.json({ token });
     }
 
@@ -129,8 +130,8 @@ class UserController {
             { returning: true, where: { id: user.id } }
         );
         user = newUser[1][0];
-        const token = generatejwt(user.id, user.email);
-        return res.json({ token, user });
+        const token = generatejwt(user.id,user.name, user.email);
+        return res.json({ token });
     }
     async delete(req, res, next) {
         const id = req.params.id;
