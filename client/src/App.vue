@@ -1,10 +1,10 @@
 <template>
   <div class="row">
-    <nav v-if="!isAuth">
+    <nav v-if="!isAuth && !codePopupOpen">
       <router-link class="router-link" to="/signIn">Вход</router-link>
       <router-link class="router-link" to="/login">Регистрация</router-link>
     </nav>
-    <router-view />
+    <router-view @codePopupOpen="codePopupOpen = !codePopupOpen" />
   </div>
 </template>
 <script>
@@ -14,22 +14,32 @@ export default {
   data() {
     return {
       isAuth: false,
+      codePopupOpen: false,
+      user: ''
     }
   },
 
   beforeMount() {
 
     check().then(data => {
-      console.log(data)
+      this.user = {
+        name: data.name,
+        surname: data.surname,
+        email: data.email
+      }
+
+      console.log(this.user)
+
+      this.isAuth = true
+      this.$router.push({ path: 'profile' })
+
 
     }).catch(error => {
       console.error(error.response.data);
     })
 
 
-    if (this.isAuth == true) {
-      this.$router.push({ path: 'profile' })
-    }
+
   }
 }
 
@@ -48,10 +58,10 @@ export default {
 </style>
 <style scoped lang="scss">
 .row {
-  margin: 0 auto;
+  margin: 100px auto;
   padding: 50px;
   width: 1040px;
-  height: 824px;
+  min-height: 824px;
   flex-shrink: 0;
   border-radius: 30px;
   background: #FFF;

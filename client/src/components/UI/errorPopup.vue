@@ -49,7 +49,7 @@ export default {
     }
 
     .description {
-        max-width: 300px;
+        max-width: 400px;
         font-size: 24px;
 
 

@@ -6,9 +6,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const auth_codes = {};
 
-const generatejwt = (id,name, email) => {
-    console.log(email,name, id);
-    return jwt.sign({ id,name, email }, process.env.SECRET_KEY, {
+const generatejwt = (id,name,surname, email) => {
+    console.log(id,name,surname, email);
+    return jwt.sign({ id,name,surname, email }, process.env.SECRET_KEY, {
         expiresIn: "30m",
     });
 };
@@ -58,20 +58,20 @@ class UserController {
             return;
         }
         if (auth_codes[email] != auth_code) {
-            res.status(400).json({
-                message: "Неверный код",
+            res.status(200).json({
+                errorMessage: "Неверный код",
             });
             return;
         }
         const hashPassword = await bcrypt.hash(password, 5);
         const newUser = await User.create({ name,email, password: hashPassword });
-        const token = generatejwt(newUser.id, newUser.name,newUser.email);
+        const token = generatejwt(newUser.id, newUser.name,newUser.surname,newUser.email);
         res.json({ token });
     }
     async authorization(req, res, next) {
         const { email, password } = req.body;
         if (!email || !password) {
-            res.status(400).json({
+            res.status(200).json({
                 errorMessage: "Некоректный Email или password",
             });
             return next(ApiError.bedRequest("Некоректный Email или password"));
@@ -79,20 +79,20 @@ class UserController {
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
-            res.json({ errorMessage: "Пользователь не найден" });
+            res.status(200).json({ errorMessage: "Пользователь не найден" });
             return next(ApiError.bedRequest("Пользователь не найден"));
         }
         let comparePassword = bcrypt.compareSync(password, user.password);
         if (!comparePassword) {
-            res.json({ errorMessage: "Указан неверный пароль" });
+            res.status(200).json({ errorMessage: "Указан неверный пароль" });
             return next(ApiError.bedRequest("Указан неверный пароль"));
         }
-        const token = generatejwt(user.id,user.name, user.email);
+        const token = generatejwt(user.id,user.name,user.surname, user.email);
         res.json({ token });
     }
 
     async check(req, res, next) {
-        const token = generatejwt(req.user.id,req.user.name, req.user.email);
+        const token = generatejwt(req.user.id,req.user.name,req.user.surname, req.user.email);
         return res.json({ token });
     }
 
@@ -130,7 +130,7 @@ class UserController {
             { returning: true, where: { id: user.id } }
         );
         user = newUser[1][0];
-        const token = generatejwt(user.id,user.name, user.email);
+        const token = generatejwt(user.id,user.name,user.surname, user.email);
         return res.json({ token });
     }
     async delete(req, res, next) {

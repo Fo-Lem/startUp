@@ -76,7 +76,7 @@ div {
     }
 
     .input-form {
-        color:#424242;
+        color:black;
         font-size: 24px;
         font-weight: 400;
         background-color: #fff;

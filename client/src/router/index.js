@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import registrationForm from '../components/registrationForm'
 import authorizationForm from '../components/authorizationForm'
-import userCabinet from '../components/userCabinet'
+import userProfile from '../components/userProfile'
 const routes = [
   {
     path:'',
@@ -19,7 +19,7 @@ const routes = [
   },{
     path: '/profile',
     name: 'profile',
-    component: userCabinet 
+    component: userProfile 
   }
 ]
 

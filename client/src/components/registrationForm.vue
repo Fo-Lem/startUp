@@ -1,10 +1,13 @@
 <template lang="">
+    
     <error-popup v-if="errors.status"
-    :description="errorDescription"/>
+    :description="errorDescription"
+    @closeErrorPopup="errors.status=false"/>
 
     <form id="formRegistration" @submit.prevent="reg" action="">
           
         <input-form
+        v-if="!regCode.isOpenPopup"
         :inputName="'name'"
         :inputType="'text'"
         v-model:inputValue="name"
@@ -12,6 +15,7 @@
         :error="errors.name.status"/>
 
         <input-form
+        v-if="!regCode.isOpenPopup"
         :inputName="'email'"
         :inputType="'email'"
         v-model:inputValue="email"
@@ -19,6 +23,7 @@
         :error="errors.email.status"/>
 
         <input-form 
+        v-if="!regCode.isOpenPopup"
         :inputName="'password1'"
         :inputType="'password'"
         :autocomplete="'off'"
@@ -27,6 +32,7 @@
         :error="errors.password.status"/>
 
         <input-form 
+        v-if="!regCode.isOpenPopup"
         :inputName="'password2'"
         :inputType="'password'"
         :autocomplete="'off'"
@@ -34,9 +40,13 @@
         :inputPlaceholder="'Подтверждение пароля'"
         :error="errors.password.status"/>
 
-        <button-form
+        <button-form 
+        v-if="!regCode.isOpenPopup"
         v-bind:buttonValue="'Зарегестрироваться'"/>
 
+        <code-popup v-if="regCode.isOpenPopup"
+        :email="email"
+        @updateCode="(data)=>{regCode.data=data}"/>
 
 
     </form>
@@ -46,25 +56,24 @@ import inputForm from './UI/inputForm'
 import buttonForm from './UI/buttonForm'
 import { registration } from '@/http/userApi'
 import ErrorPopup from './UI/errorPopup'
+import codePopup from './codePopup'
+
 
 export default {
-    components: { inputForm, buttonForm, ErrorPopup },
+    components: { inputForm, buttonForm, ErrorPopup,codePopup },
     data() {
         return {
             name: '',
             email: '',
             password1: '',
             password2: '',
-            regCode: '',
-            openPopupCode: false,
+            regCode: {isOpenPopup:false,data:''},
             errors:{
                 status:false,
-                name:{status:false,description:'1'},
-                email:{status:false,description:'1'},
-                password:{status:false,description:'1'},
+                name:{status:false,description:''},
+                email:{status:false,description:''},
+                password:{status:false,description:''},
             }
-
-
         }
     },
     computed:{
@@ -78,8 +87,10 @@ export default {
 
         }
     },
+    emits:['codePopupOpen'],
     methods: {
-        reg() {
+        async reg() {
+            let res
             if (this.name==""){
                 this.errors.status=true
                 this.errors.name.status=true
@@ -89,12 +100,26 @@ export default {
             this.errors.name.status=false
             if (this.emailValidator(this.email)) {
                 if (this.passwordValidator(this.password1, this.password2)) {
-                    if (this.codeValidator(this.regCode)) {
-                        registration(this.name, this.email, this.password1)
-                        this.errors.status=false
-                        return
+                    if (this.codeValidator(this.regCode.data)) {
+                        res = await registration(this.name, this.email, this.password1,this.regCode.data)
+                        if(res.errorMessage){
+                        this.errors.status=true
+                        this.errors.email.status=true
+                        this.errors.email.description=res.errorMessage
+                        return res
                     }
-                    this.openPopupCode = true
+                        this.errors.status=false
+                        return res
+                    }
+                    res = await registration(this.name, this.email, this.password1)
+                    if(res.errorMessage){
+                        this.errors.status=true
+                        this.errors.email.status=true
+                        this.errors.email.description=res.errorMessage
+                        return res
+                    }
+                    this.$emit('codePopupOpen')
+                    this.regCode.isOpenPopup = true
                 }
             }
 
@@ -113,7 +138,7 @@ export default {
                 this.errors.status=true
                 this.errors.password.status=true
                 this.errors.password.description="Пароли не совпадают"
-                
+                return false;
             }
             this.errors.status=true
             this.errors.password.status=true
