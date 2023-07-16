@@ -4,7 +4,7 @@
       <router-link class="router-link" to="/signIn">Вход</router-link>
       <router-link class="router-link" to="/login">Регистрация</router-link>
     </nav>
-    <router-view @codePopupOpen="codePopupOpen = !codePopupOpen" />
+    <router-view :user="user" @codePopupOpen="codePopupOpen = !codePopupOpen" />
   </div>
 </template>
 <script>
@@ -15,7 +15,7 @@ export default {
     return {
       isAuth: false,
       codePopupOpen: false,
-      user: ''
+      user: {}
     }
   },
 

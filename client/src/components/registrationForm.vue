@@ -109,6 +109,7 @@ export default {
                         return res
                     }
                         this.errors.status=false
+                        this.$router.push({ path: 'profile' })
                         return res
                     }
                     res = await registration(this.name, this.email, this.password1)
