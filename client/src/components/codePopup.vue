@@ -19,13 +19,17 @@
     />
 
     <div class="container">
-        <button-form class="buttonCode" v-bind:buttonValue="'Отправить'" />
+        <button-form
+            class="buttonCode"
+            v-bind:buttonValue="'Отправить'"
+            v-bind:buttonType="'submit'"
+        />
 
-        <p v-if="time == 0" class="resend"  @click="resend">
+        <p v-if="time == 0" class="resend" @click="resend">
             Отправить повторно
         </p>
         <p v-else>
-            Повторно через <span>{{time}}s</span>
+            Повторно через <span>{{ time }}s</span>
         </p>
     </div>
 </template>
@@ -34,7 +38,7 @@ import inputForm from "./UI/inputForm";
 import buttonForm from "./UI/buttonForm";
 import ErrorPopup from "./UI/errorPopup";
 
-import { registration } from '@/http/userApi'
+import { registration } from "@/http/userApi";
 export default {
     components: { inputForm, buttonForm, ErrorPopup },
     name: "code-popup",
@@ -42,7 +46,7 @@ export default {
         return {
             code: "",
             time: 1,
-            interval: '',
+            interval: "",
             errors: {
                 status: false,
                 code: { status: false, description: "1" },
@@ -70,21 +74,22 @@ export default {
             this.$emit("updateCode", this.code);
         },
         resend() {
-            registration('abc','darksunset2001@gmail.com1','abc')
-            this.time = 90
+            registration("abc", "darksunset2001@gmail.com1", "abc");
+            this.time = 90;
         },
     },
     watch: {
         time: function (value, oldValue) {
-            if (value <= 0) return
-            if (++value == oldValue || oldValue <= 0) setTimeout(() => --this.time, 1000)
-        }
+            if (value <= 0) return;
+            if (++value == oldValue || oldValue <= 0)
+                setTimeout(() => --this.time, 1000);
+        },
     },
     emits: ["updateCode", "submit"],
 
     mounted() {
-        this.time--
-    }
+        this.time--;
+    },
 };
 </script>
 <style scoped lang="scss">

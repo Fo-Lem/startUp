@@ -1,96 +1,99 @@
 <template>
-  <div class="row">
-    <nav v-if="!isAuth && !codePopupOpen">
-      <router-link class="router-link" to="/signIn">Вход</router-link>
-      <router-link class="router-link" to="/login">Регистрация</router-link>
-    </nav>
-    <router-view :user="user" @codePopupOpen="codePopupOpen = !codePopupOpen" />
-  </div>
+    <div class="row" :class="[isAuth ? 'row-profile' : '', 'row']">
+        <nav v-if="!isAuth && !codePopupOpen">
+            <router-link class="router-link" to="/signIn">Вход</router-link>
+            <router-link class="router-link" to="/login"
+                >Регистрация</router-link
+            >
+        </nav>
+        <router-view
+            :user="user"
+            :isAuth="isAuth"
+            @isAuth="authorization"
+            @codePopupOpen="codePopupOpen = !codePopupOpen"
+        />
+    </div>
 </template>
 <script>
-import { check } from './http/userApi'
+import { check } from "./http/userApi";
 
 export default {
-  data() {
-    return {
-      isAuth: false,
-      codePopupOpen: false,
-      user: {}
-    }
-  },
+    data() {
+        return {
+            isAuth: false,
+            codePopupOpen: false,
+            user: {},
+        };
+    },
+    methods: {
+        authorization() {
+            check()
+                .then((data) => {
+                    this.user = {
+                        id: data.id,
+                        name: data.name,
+                        surname: data.surname,
+                        email: data.email,
+                    };
+                    this.isAuth = true;
+                    this.$router.push({ name: "profile" });
+                })
+                .catch((error) => {
+                    console.log(error.response.data);
+                });
+        },
+    },
 
-  beforeMount() {
-
-    check().then(data => {
-      this.user = {
-        name: data.name,
-        surname: data.surname,
-        email: data.email
-      }
-
-      console.log(this.user)
-
-      this.isAuth = true
-      this.$router.push({ path: 'profile' })
-
-
-    }).catch(error => {
-      console.error(error.response.data);
-    })
-
-
-
-  }
-}
-
-
-
-
+    beforeMount() {
+        this.authorization();
+    },
+};
 </script>
 <style lang="scss">
 * {
-  color: #686868;
-  font-family: Roboto;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    color: #686868;
+    font-family: Roboto;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 </style>
 <style scoped lang="scss">
 .row {
-  margin: 100px auto;
-  padding: 50px;
-  width: 1040px;
-  min-height: 824px;
-  flex-shrink: 0;
-  border-radius: 30px;
-  background: #FFF;
-  box-shadow: 0px 10px 25px 0px rgba(92, 99, 105, 0.20);
+    margin: 100px auto;
+    padding: 50px;
+    width: 1040px;
+    min-height: 824px;
+    flex-shrink: 0;
+    border-radius: 30px;
+    background: #fff;
+    box-shadow: 0px 10px 25px 0px rgba(92, 99, 105, 0.2);
 
-  nav {
-    font-size: 30px;
-    display: flex;
-    gap: 50px;
-    margin-bottom: 50px;
-
-    .router-link {
-      color: #2c3e50;
-      text-decoration: none;
-      color: #686868;
-
-      &:hover {
-        color: #4786FF;
-      }
-
-      &-active {
-        color: #4786FF;
-        text-decoration: underline;
-      }
+    &-profile {
+        height: auto;
+        min-height: auto;
     }
 
+    nav {
+        font-size: 30px;
+        display: flex;
+        gap: 50px;
+        margin-bottom: 70px;
 
+        .router-link {
+            color: #2c3e50;
+            text-decoration: none;
+            color: #686868;
 
+            &:hover {
+                color: #4786ff;
+            }
 
-  }
+            &-active {
+                color: #4786ff;
+                text-decoration: underline;
+            }
+        }
+    }
 }
 </style>

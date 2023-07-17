@@ -79,12 +79,12 @@ class UserController {
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
-            res.status(200).json({ errorMessage: "Пользователь не найден" });
+            res.status(401).json({ errorMessage: "Пользователь не найден" });
             return next(ApiError.bedRequest("Пользователь не найден"));
         }
         let comparePassword = bcrypt.compareSync(password, user.password);
         if (!comparePassword) {
-            res.status(200).json({ errorMessage: "Указан неверный пароль" });
+            res.status(401).json({ errorMessage: "Указан неверный пароль" });
             return next(ApiError.bedRequest("Указан неверный пароль"));
         }
         const token = generatejwt(user.id,user.name,user.surname, user.email);

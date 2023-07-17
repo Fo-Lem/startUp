@@ -1,10 +1,21 @@
 <template lang="">
     <div class="errorPopup">
         <div class="circle">!</div>
-        <p class="description">Ошибка! {{description}}</p>
-        <svg @click="$emit('closeErrorPopup')" class="XMarc" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path clip-rule="evenodd" fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"></path>
-          </svg>
+        <p class="description">Ошибка! {{ description }}</p>
+        <svg
+            @click="$emit('closeErrorPopup')"
+            class="XMarc"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+        >
+            <path
+                clip-rule="evenodd"
+                fill-rule="evenodd"
+                d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
+            ></path>
+        </svg>
     </div>
 </template>
 <script>
@@ -13,13 +24,14 @@ export default {
     props: {
         description: {
             type: String,
+            require: true,
         },
         isActive: {
             type: Boolean,
             require: true,
-        }
-    }
-}
+        },
+    },
+};
 </script>
 <style scoped lang="scss">
 .errorPopup {
@@ -41,19 +53,16 @@ export default {
         font-size: 40px;
         text-align: center;
         font-weight: 700;
-        border: 2px solid #CB5E5E;
+        border: 2px solid #cb5e5e;
         width: 60px;
         height: 60px;
         border-radius: 30px;
-        color: #CB5E5E;
+        color: #cb5e5e;
     }
 
     .description {
         max-width: 400px;
         font-size: 24px;
-
-
-
     }
 
     .XMarc {
@@ -63,8 +72,9 @@ export default {
         height: 25px;
 
         &:hover {
-            fill: #CB5E5E;
+            fill: #cb5e5e;
             cursor: pointer;
         }
     }
-}</style>
+}
+</style>

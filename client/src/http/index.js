@@ -1,19 +1,16 @@
-import axios from 'axios';
-
+import axios from "axios";
 
 const $host = axios.create({
-    baseURL:process.env.VUE_APP_API_URL
-})
+    baseURL: process.env.VUE_APP_API_URL,
+});
 
 const $authHost = axios.create({
-    baseURL:process.env.VUE_APP_API_URL
-})
-const authInterceptor = config => {
-    config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`
-    return config
-}
+    baseURL: process.env.VUE_APP_API_URL,
+});
+const authInterceptor = (config) => {
+    config.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
+    return config;
+};
 
-$authHost.interceptors.request.use(authInterceptor)
-export{
-    $authHost,$host
-}
+$authHost.interceptors.request.use(authInterceptor);
+export { $authHost, $host };
