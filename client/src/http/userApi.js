@@ -1,3 +1,4 @@
+import axios from "axios";
 import { $host, $authHost } from ".";
 import jwt_decode from "jwt-decode";
 
@@ -35,22 +36,31 @@ export const check = async () => {
     localStorage.setItem("token", data.token);
     return jwt_decode(data.token);
 };
-export const update = async (
-    name,
-    surname,
-    email,
-    newemail,
-    password,
-    newpassword
-) => {
-    const { data } = await $authHost.put("update", {
-        name,
-        surname,
-        email,
-        newemail,
-        password,
-        newpassword,
-    });
+export const update = async (name, email, newEmail, newPassword, avatar) => {
+    console.log(avatar)
+    let fd = new FormData();
+    fd.append("file", avatar);
+    fd.append("name", name);
+    fd.append("email", email);
+    fd.append("newEmail", newEmail);
+    fd.append("newPassword", newPassword);
+
+    let data  =await axios({
+        method: 'put',
+        url: process.env.VUE_APP_API_URL+'update',
+        data: fd,
+        headers: { "Content-Type": "multipart/form-data",
+        "Authorization": `Bearer ${localStorage.token}`
+     },
+      })
+      .then(response => {
+        console.log(response.data)
+        return response.data;
+      })
+      .catch(error => {
+        console.log(error)
+        return error;
+      })
     localStorage.setItem("token", data.token);
     return jwt_decode(data.token);
 };

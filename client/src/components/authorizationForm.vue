@@ -36,6 +36,7 @@ import inputForm from "./UI/inputForm";
 import buttonForm from "./UI/buttonForm";
 import { login } from "@/http/userApi";
 import ErrorPopup from "./UI/errorPopup";
+import { emailValidator, passwordValidator } from "@/validator/validators";
 export default {
     components: { inputForm, buttonForm, ErrorPopup },
     emits: ["codePopupOpen", "isAuth"],
@@ -61,9 +62,18 @@ export default {
         },
     },
     methods: {
+        noErrors() {
+            this.errors.status = false;
+            this.errors.email.status = false;
+            this.errors.password.status = false;
+        },
         async auth() {
-            if (this.emailValidator(this.email)) {
-                if (this.passwordValidator(this.password1)) {
+            let res
+            res = emailValidator(this.email)
+            if (res === true) {
+                res = passwordValidator(this.password1, this.password1)
+
+                if (res === true) {
                     await login(this.email, this.password1)
                         .then(() => {
                             this.$emit("isAuth");
@@ -72,41 +82,30 @@ export default {
                             const error = req.response.data.errorMessage;
                             switch (error) {
                                 case "Указан неверный пароль":
+                                    this.noErrors()
                                     this.errors.status = true;
                                     this.errors.password.status = true;
                                     this.errors.password.description = error;
                                     return;
                                 case "Пользователь не найден":
+                                    this.noErrors()
                                     this.errors.status = true;
                                     this.errors.email.status = true;
                                     this.errors.email.description = error;
+
                                     return;
                             }
                         });
+                } else {
+                    this.errors.status = true;
+                    this.errors.password.status = true;
+                    this.errors.password.description = res.errorMessage;
                 }
+            } else {
+                this.errors.status = true;
+                this.errors.email.status = true;
+                this.errors.email.description = res.errorMessage;
             }
-        },
-
-        passwordValidator(pas1) {
-            if (pas1 != "") {
-                return true;
-            }
-            this.errors.status = true;
-            this.errors.password.status = true;
-            this.errors.password.description = 'Не заполнено поле "Пароль"';
-            return false;
-        },
-
-        emailValidator(email) {
-            if (email != "") {
-                this.errors.email.status = false;
-                return true;
-            }
-            this.errors.status = true;
-            this.errors.email.status = true;
-            this.errors.email.description = 'Не заполнено поле "email"';
-            console.log(email);
-            return false;
         },
     },
 };

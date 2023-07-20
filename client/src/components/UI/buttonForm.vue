@@ -1,5 +1,8 @@
 <template lang="">
-    <input class="button-form" :type="buttonType" :value="buttonValue" />
+    <input :class="[
+        buttonType=='reset' ? 'button-form-reset' : '',
+        'button-form',
+    ]"  :type="buttonType" :value="buttonValue" />
 </template>
 <script>
 export default {
@@ -26,6 +29,10 @@ export default {
     border: 2px solid #4786ff;
     padding: 25px 30px;
     width: 100%;
+    &-reset{
+        background-color: #FFFFFF;
+        color: #4786ff;  
+    }
 
     &:hover {
         cursor: pointer;

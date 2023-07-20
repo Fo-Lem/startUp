@@ -4,11 +4,12 @@ const ApiError = require("../error/ApiError");
 const { User } = require("../models/models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 const auth_codes = {};
 
-const generatejwt = (id,name,surname, email) => {
-    console.log(id,name,surname, email);
-    return jwt.sign({ id,name,surname, email }, process.env.SECRET_KEY, {
+const generatejwt = (id, name, email, avatar) => {
+    console.log(id, name, email);
+    return jwt.sign({ id, name, email, avatar }, process.env.SECRET_KEY, {
         expiresIn: "30m",
     });
 };
@@ -21,7 +22,7 @@ const createCode = (email) => {
         word += letters.charAt(Math.floor(Math.random() * letters.length));
     }
     auth_codes[email] = word;
-    
+
     setTimeout(() => {
         let e = email;
         delete auth_codes[e];
@@ -33,7 +34,7 @@ const createCode = (email) => {
 
 class UserController {
     async registration(req, res, next) {
-        const { name,email, password, auth_code } = req.body;
+        const { name, email, password, auth_code } = req.body;
         if (!email || !password) {
             res.status(400).json({
                 errorMessage: "Некоректный Email или password",
@@ -43,7 +44,7 @@ class UserController {
         const candidate = await User.findOne({ where: { email } });
 
         if (candidate) {
-            res.json({
+            res.status(400).json({
                 errorMessage: "Пользователь с таким Email уже существует",
             });
             return next(
@@ -64,8 +65,17 @@ class UserController {
             return;
         }
         const hashPassword = await bcrypt.hash(password, 5);
-        const newUser = await User.create({ name,email, password: hashPassword });
-        const token = generatejwt(newUser.id, newUser.name,newUser.surname,newUser.email);
+        const newUser = await User.create({
+            name,
+            email,
+            password: hashPassword,
+        });
+        const token = generatejwt(
+            newUser.id,
+            newUser.name,
+            newUser.email,
+            newUser.avatar
+        );
         res.json({ token });
     }
     async authorization(req, res, next) {
@@ -87,21 +97,39 @@ class UserController {
             res.status(401).json({ errorMessage: "Указан неверный пароль" });
             return next(ApiError.bedRequest("Указан неверный пароль"));
         }
-        const token = generatejwt(user.id,user.name,user.surname, user.email);
+        const token = generatejwt(user.id, user.name, user.email,user.avatar);
         res.json({ token });
     }
 
     async check(req, res, next) {
-        const token = generatejwt(req.user.id,req.user.name,req.user.surname, req.user.email);
+        const email=req.user.email
+        const user = await User.findOne({ where: { email } })
+        if (!user) {
+            res.status(401).json({ errorMessage: "Пользователь не найден" });
+            return next(ApiError.bedRequest("Пользователь не найден"));
+        }
+        const token = generatejwt(
+            user.id,
+            user.name,
+            user.email,
+            user.avatar
+        );
+        
         return res.json({ token });
     }
 
     async update(req, res, next) {
-        let { email, newemail, newpassword, name, surname } = req.body;
-        console.log(email, newemail, newpassword, name, surname);
+        let { name,
+            email,
+            newEmail,
+            newPassword } = req.body;
+        let avatar
+        console.log(name,
+            email,
+            newEmail,
+            newPassword);
 
         var decoded = jwt_decode(req.headers.authorization.split(" ")[1]);
-        console.log(decoded.email);
 
         let user = await User.findOne({ where: { email } });
 
@@ -111,26 +139,34 @@ class UserController {
         if (user.id != decoded.id) {
             return next(ApiError.bedRequest("Не верный пользователь"));
         }
-        if (req.files.avatar) {
-            req.files.avatar.mv("public/userAvatars/" + user.id + ".jpg");
+        
+        if (req.files) {
+            req.files.file.mv("public/userAvatars/" + user.id + ".jpg");
+            avatar=user.id
         }
 
-        if (newpassword) {
-            newpassword = await bcrypt.hash(newpassword, 5);
+        if (newPassword) {
+            newPassword = await bcrypt.hash(newPassword, 5);
         } else {
-            newpassword = user.password;
+            newPassword = user.password;
         }
 
-        if (newemail) {
-            email = newemail;
+        if (newEmail) {
+            email = newEmail;
+        }
+        if (!name) {
+            name = user.name;
         }
 
         const newUser = await User.update(
-            { email, password: newpassword, name, surname },
+            { email, password: newPassword, name, avatar },
             { returning: true, where: { id: user.id } }
         );
-        user = newUser[1][0];
-        const token = generatejwt(user.id,user.name,user.surname, user.email);
+        if(newUser){
+            user = newUser[1][0];
+        }
+        
+        const token = generatejwt(user.id, user.name, user.email, user.avatar);
         return res.json({ token });
     }
     async delete(req, res, next) {

@@ -15,7 +15,7 @@
         v-model:inputValue="code"
         @input="updateInput()"
         :inputPlaceholder="'Код подтверждения с Email'"
-        :error="errors.code.status"
+        :error="errors.status"
     />
 
     <div class="container">
@@ -47,10 +47,7 @@ export default {
             code: "",
             time: 1,
             interval: "",
-            errors: {
-                status: false,
-                code: { status: false, description: "1" },
-            },
+            
         };
     },
     props: {
@@ -58,14 +55,17 @@ export default {
             require: true,
             type: String,
         },
+        errors:{
+
+        }
     },
     computed: {
         errorDescription: function () {
-            for (const key in this.errors) {
-                if (this.errors[key].status === true) {
-                    return this.errors[key].description;
+            
+                if (this.errors.code.status === true) {
+                    return this.errors.code.description;
                 }
-            }
+            
             return "";
         },
     },

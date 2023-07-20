@@ -2,9 +2,7 @@
     <div class="row" :class="[isAuth ? 'row-profile' : '', 'row']">
         <nav v-if="!isAuth && !codePopupOpen">
             <router-link class="router-link" to="/signIn">Вход</router-link>
-            <router-link class="router-link" to="/login"
-                >Регистрация</router-link
-            >
+            <router-link class="router-link" to="/login">Регистрация</router-link>
         </nav>
         <router-view
             :user="user"
@@ -27,6 +25,7 @@ export default {
     },
     methods: {
         authorization() {
+            this.isAuth = true;
             check()
                 .then((data) => {
                     this.user = {
@@ -34,17 +33,19 @@ export default {
                         name: data.name,
                         surname: data.surname,
                         email: data.email,
+                        avatar: data.avatar,
                     };
-                    this.isAuth = true;
                     this.$router.push({ name: "profile" });
                 })
                 .catch((error) => {
+                    this.isAuth = false;
+                    this.$router.push({ name: "authorizationForm" });
                     console.log(error.response.data);
                 });
         },
     },
 
-    beforeMount() {
+    created() {
         this.authorization();
     },
 };
@@ -68,6 +69,7 @@ export default {
     border-radius: 30px;
     background: #fff;
     box-shadow: 0px 10px 25px 0px rgba(92, 99, 105, 0.2);
+    transition: height 1s;
 
     &-profile {
         height: auto;

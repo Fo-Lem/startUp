@@ -55,7 +55,7 @@ export default {
         getSrc(photo) {
             if (this.user.id) {
                 return photo == ""
-                    ? `http://localhost:8080/public/userAvatars/1.jpg`
+                    ? `http://localhost:8080/public/userAvatars/${this.user.avatar}.jpg`
                     : URL.createObjectURL(photo[0]);
             }
         },
@@ -91,6 +91,7 @@ export default {
         border-radius: 85px;
         height: 170px;
         width: 170px;
+        object-position: center;
         object-fit: cover;
     }
 

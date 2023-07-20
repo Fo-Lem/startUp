@@ -60,11 +60,14 @@
                         regCode.data = data;
                     }
                 "
+                :errors="errors"
             />
         </form>
     </div>
 </template>
 <script>
+
+import { emailValidator, passwordValidator, codeValidator } from "@/validator/validators";
 import inputForm from "./UI/inputForm";
 import buttonForm from "./UI/buttonForm";
 import { registration } from "@/http/userApi";
@@ -85,6 +88,7 @@ export default {
                 name: { status: false, description: "" },
                 email: { status: false, description: "" },
                 password: { status: false, description: "" },
+                code: { status: false, description: "" }
             },
         };
     },
@@ -108,70 +112,69 @@ export default {
                 return;
             }
             this.errors.name.status = false;
-            if (this.emailValidator(this.email)) {
-                if (this.passwordValidator(this.password1, this.password2)) {
-                    if (this.codeValidator(this.regCode.data)) {
+
+
+            let res
+            res = emailValidator(this.email)
+            
+            if (res === true) {
+                res = passwordValidator(this.password1, this.password2)
+                console.log(res)
+                if (res === true) {
+                    if (!this.regCode.isOpenPopup) {
+                        await registration(this.name, this.email, this.password1)
+                            .then(() => {
+                                this.$emit("codePopupOpen");
+                                this.errors.status = false;
+                                this.regCode.isOpenPopup = true;
+                                
+                            })
+                            .catch((req) => {
+                                const error = req.response.data.errorMessage;
+                                this.errors.status = true;
+                                this.errors.email.status = true;
+                                this.errors.email.description = error;
+                            });
+                            return
+                    }
+                    res = codeValidator(this.regCode.data)
+                    if (res === true) {
                         await registration(
                             this.name,
                             this.email,
                             this.password1,
                             this.regCode.data
                         )
-                            .then((res) => {
+                            .then(() => {
                                 this.errors.status = false;
                                 this.$emit("isAuth");
-                                return res.response.data;
+                                return
                             })
-                            .catch(() => {
+                            .catch((req) => {
+                                const error = req.response.data.errorMessage;
                                 this.errors.status = true;
+                                this.errors.code.status = true;
+                                this.errors.code.description = error;
                             });
                         return;
+                    } else {
+                        const error = res.errorMessage;
+                        console.log(error)
+                        this.errors.status = true;
+                        this.errors.code.status = true;
+                        this.errors.code.description = error;
                     }
-                    await registration(this.name, this.email, this.password1)
-                        .then(() => {
-                            this.$emit("codePopupOpen");
-                            this.regCode.isOpenPopup = true;
-                        })
-                        .catch((req) => {
-                            const error = req.response.data.errorMessage;
-                            this.errors.status = true;
-                            this.errors.email.status = true;
-                            this.errors.email.description = error;
-                        });
+                    
+                } else {
+                    this.errors.status = true;
+                    this.errors.password.status = true;
+                    this.errors.password.description = res.errorMessage;
                 }
-            }
-        },
-
-        passwordValidator(pas1, pas2) {
-            if (pas1 != "" && pas2 != "") {
-                if (pas1 === pas2) {
-                    return true;
-                }
+            } else {
                 this.errors.status = true;
-                this.errors.password.status = true;
-                this.errors.password.description = "Пароли не совпадают";
-                return false;
+                this.errors.email.status = true;
+                this.errors.email.description = res.errorMessage;
             }
-            this.errors.status = true;
-            this.errors.password.status = true;
-            this.errors.password.description =
-                'Не заполнено поле "Пароль" или "Подтверждение пароля"';
-            return false;
-        },
-
-        emailValidator(email) {
-            if (email != "") {
-                this.errors.email.status = false;
-                return true;
-            }
-            this.errors.status = true;
-            this.errors.email.status = true;
-            this.errors.email.description = 'Не заполнено поле "email"';
-            console.log(email);
-            return false;
-        },
-        codeValidator(regCode) {
-            return regCode ? true : false;
         },
     },
 };
